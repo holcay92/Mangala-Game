@@ -5,18 +5,18 @@ import java.util.*;
 public class Mangala {
 
 
-        private enum User {
-            One ((board.length - 2) / 2, board.length - 1),
-            Two (board.length - 1, (board.length - 2) / 2);
-            private final int HoleLocation;
-            private final int HoleSkip;
+        public static class User {
 
-            User(int location, int skip) {
+            public final int HoleLocation;
+            public final int HoleSkip;
+
+           public User(int location, int skip) {
                 HoleLocation = location;
                 HoleSkip = skip;
             }
+
             int getHole() {
-                return board[HoleLocation];
+                return gameBoard[HoleLocation];
             }
             int getHoleLoc() {
                 return HoleLocation;
@@ -24,20 +24,26 @@ public class Mangala {
             int getSkip() {
                 return HoleSkip;
             }
-
         }
-        private static int[] board;
+        private static int[] gameBoard;
         private User turn;
+        public static User[] users = new User[2];
+       
+        
+    public static void main(String[] args) {
+        Mangala game = new Mangala();
 
-        public static void main(String[] args) {
-            Mangala game = new Mangala();
+        User user1 = new User((gameBoard.length - 2) / 2, gameBoard.length - 1);
+        User user2 = new User((gameBoard.length - 1), (gameBoard.length - 2) / 2);
+        users[0] = user1 ;
+        users[1] = user2 ;
 
             boolean playAgain = true;
             while (playAgain) {
                 Scanner s = new Scanner(System.in);
                 game.reset();
                 game.printBoard();
-                // Game loop
+// Game loop
                 while (!game.isOver()) {
                     boolean again = true;
                     while (again) {
@@ -58,8 +64,8 @@ public class Mangala {
 
         // Create a game object
         public Mangala() {
-            board = new int[14];
-            turn = User.One;
+            gameBoard = new int[14];
+            turn = users[0];
         }
 
         // Get the current turn
@@ -71,55 +77,55 @@ public class Mangala {
 
         // Switches the turn from User One to User two
         public void switchTurn() {
-            if (turn == User.One) {
-                turn = User.Two;
+            if (turn == users[0]) {
+                turn = users[1];
             } else {
-                turn = User.One;
+                turn = users[0];
             }
         }
 
         // Resets the game board
         public void reset() {
             int STARTING_AMOUNT = 4;
-            Arrays.fill(board, STARTING_AMOUNT);
-            for (User p : User.values()) {
-                board[p.getHoleLoc()] = 0;
+            Arrays.fill(gameBoard, STARTING_AMOUNT);
+            for (User p : users) {
+                gameBoard[p.getHoleLoc()] = 0;
             }
-            turn = User.One;
+            turn = users[0];
         }
 
         // Prints the current game state
         public void printBoard() {
-            System.out.println("    (1) (2) (3) (4) (5) (6) ");
+            System.out.println(" (1) (2) (3) (4) (5) (6) ");
             System.out.println("");
            // System.out.print("|  ");
-            for (int i = board.length - 2; i >= board.length / 2; i--) {
+            for (int i = gameBoard.length - 2; i >= gameBoard.length / 2; i--) {
                 System.out.print("| ");
-                System.out.printf("%-2s",board[i]);
+                System.out.printf("%-2s", gameBoard[i]);
             }
             System.out.print("|  |\n|");
-            System.out.printf("%-2d|-----------------------|%2d|\n", User.Two.getHole(), User.One.getHole());
+            System.out.printf("%-2d|-----------------------|%2d|\n", users[1].getHole(), users[0].getHole());
            // System.out.print("|  ");
-            for (int i = 0; i < (board.length / 2) - 1; i++) {
+            for (int i = 0; i < (gameBoard.length / 2) - 1; i++) {
                 System.out.print("| ");
-                System.out.printf("%-2s",board[i]);
+                System.out.printf("%-2s", gameBoard[i]);
             }
             System.out.println("|  |");
             System.out.println("");
-            System.out.println("    (1) (2) (3) (4) (5) (6) ");
+            System.out.println(" (1) (2) (3) (4) (5) (6) ");
         }
 
         // Returns true if the game is over (one side has no pieces)
         public boolean isOver() {
-            return sum(User.One) == 0 || sum(User.Two) == 0;
+            return sum(users[0]) == 0 || sum(users[1]) == 0;
         }
 
-        // Returns an integer of the number of pieces on User m's side of the board
-        public int sum(User m) {
+        // Returns an integer of the number of pieces on User person's side of the board
+        public int sum(User person) {
             int sum = 0;
-            int start = (m.getSkip() + 1) % board.length;
-            for (int i = start; i < start + (board.length - 1) / 2; i++) {
-                sum += board[i];
+            int start = (person.getSkip() + 1) % gameBoard.length;
+            for (int i = start; i < start + (gameBoard.length - 1) / 2; i++) {
+                sum += gameBoard[i];
             }
             return sum;
         }
@@ -128,21 +134,21 @@ public class Mangala {
         // Carries out a move for the User of the current turn
         // Returns true if the User gets to go again (landed in the kalah)
         public boolean markBoard(int pos) {
-            int handAmount = board[pos];
-            board[pos] = 0;
+            int handAmount = gameBoard[pos];
+            gameBoard[pos] = 0;
             while (handAmount > 0) {
-                pos = (pos + 1) % board.length;
+                pos = (pos + 1) % gameBoard.length;
                 handAmount--;
                 if (pos == turn.getSkip()) {
-                    pos = (pos + 1) % board.length;
+                    pos = (pos + 1) % gameBoard.length;
                 }
-                board[pos]++;
+                gameBoard[pos]++;
             }
             boolean taken = false;
-            if (pos != turn.getHoleLoc() && board[pos] == 1 && board[getOpposite(pos)] != 0) {
-                board[turn.getHoleLoc()] += board[pos] + board[getOpposite(pos)];
-                board[pos] = 0;
-                board[getOpposite(pos)] = 0;
+            if (pos != turn.getHoleLoc() && gameBoard[pos] == 1 && gameBoard[getOpposite(pos)] != 0) {
+                gameBoard[turn.getHoleLoc()] += gameBoard[pos] + gameBoard[getOpposite(pos)];
+                gameBoard[pos] = 0;
+                gameBoard[getOpposite(pos)] = 0;
                 taken = true;
             }
             printBoard();
@@ -155,7 +161,7 @@ public class Mangala {
 
         // Returns index of the opposite position on the board
         private int getOpposite(int pos) {
-            return board.length - 2 - pos;
+            return gameBoard.length - 2 - pos;
         }
 
         // Reads a value from a scanner in the console
@@ -169,12 +175,12 @@ public class Mangala {
                     if (position < 1 || position > 6) {
                         System.out.println("Input must be between 1 and 6:");
                     } else {
-                        if (turn == User.One) {
+                        if (turn == users[0]) {
                             position--;
                         } else {
-                            position = board.length - 1 - position;
+                            position = gameBoard.length - 1 - position;
                         }
-                        if (board[position] == 0) {
+                        if (gameBoard[position] == 0) {
                             System.out.print("Hole is empty!");
                         } else {
                             valid = true;
