@@ -11,7 +11,8 @@ public class Mangala {
          public static User[] users = new User[2];
         // At the beginning player presses the enter button and flips a coin to determine who is going to start
          public static int flipUser;
-
+         public static int user1Sum;
+         public static int user2Sum;
          // User defining class
         public static class User {
             // To determine the wallet location of the user. mangalaGameBoard[6] for the first player and
@@ -56,32 +57,31 @@ public class Mangala {
                         System.out.print("User " + who.whoseTurn + ", enter a  hole number (1-6):");
                         position = game.readPositionValueFromUser();
                         System.out.println("----------------------------------------------------------------");
-                        playGame = game.markBoard(position);
+                        playGame = game.gameMechanic(position);
                     }
                     game.switchTurn();
                 }
                 //if all the holes of user1 are empty then it collects the remaining stones of user2.
-                if(mangalaGameBoard[users[0].userWalletLocation] > mangalaGameBoard[users[1].userWalletLocation]){
+                if(user1Sum == 0){
                     for(int i = 0 ; i < 6 ; i++ ){
                         mangalaGameBoard[users[0].userWalletLocation] += mangalaGameBoard[i+7];
                     }
                 }
                 //if all the holes of user2 are empty then it collects the remaining stones of user1.
-                else if(mangalaGameBoard[users[1].userWalletLocation] > mangalaGameBoard[users[0].userWalletLocation]){
+                else if(user2Sum == 0){
                     for(int i = 0 ; i < 6 ; i++ ){
                         mangalaGameBoard[users[1].userWalletLocation] += mangalaGameBoard[i];
                     }
                 }
-                //if user1 and user2 have equal stones in their wallets then it is a draw
-                else{
-                    System.out.println("The game is over! No winner :)");
-                    System.exit(0);
-                }
                 //default random winner value
-                int winner = 2;
+                int winner = 0;
                 // who has the more stones is the winner
-                if(mangalaGameBoard[users[1].userWalletLocation]<mangalaGameBoard[users[0].userWalletLocation]){
+                if(mangalaGameBoard[users[1].userWalletLocation] < mangalaGameBoard[users[0].userWalletLocation]){
                     winner = 1;
+                }else if (mangalaGameBoard[users[0].userWalletLocation] < mangalaGameBoard[users[1].userWalletLocation]){
+                    winner = 2;
+                }else{
+                    System.out.println("The game is over! No winner :)  ");System.exit(0);
                 }
                 System.out.println("The game is over! The winner is User "+ winner);
                 System.out.println("Scores:\nUser 1: " + mangalaGameBoard[users[0].userWalletLocation]+
@@ -149,15 +149,14 @@ public class Mangala {
 
         // Returns true if the game is over (one side has no pieces)
         public boolean isGameOver() {
-            boolean isEmpty= false;
-            int user1Sum=sum(users[0]);
-            int user2Sum=sum(users[1]);
-            if(user1Sum ==0 || user2Sum == 0){
+            boolean isEmpty = false;
+            user1Sum = sum(users[0]);
+            user2Sum = sum(users[1]);
+            if(user1Sum == 0 || user2Sum == 0){
                 isEmpty = true;
             }
             return isEmpty;
         }
-
         // calculates the number of pieces on player's side of the board
         public int sum(User player) {
             int sum = 0;
@@ -168,7 +167,7 @@ public class Mangala {
             return sum;
         }
 
-        public boolean markBoard(int chosenPosition) {
+        public boolean gameMechanic(int chosenPosition) {
             int pieceAmount = mangalaGameBoard[chosenPosition];
             int initChosenPosition = chosenPosition;
             int initHandAmount = pieceAmount;
