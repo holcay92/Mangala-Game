@@ -28,9 +28,7 @@ public class Mangala {
                 this.rivalWalletLocation = rivalWalletLocation;
                 this.whoseTurn = turn;
             }
-
         }
-
     public static void main(String[] args) throws IOException {
         Mangala game = new Mangala();
         int user1WalletLocation = 6;
@@ -49,9 +47,9 @@ public class Mangala {
                 System.out.println("User "+ flipUser + " will start..\n");
 
                 game.startGame();
-                game.printBoard();
+                game.printCurrentBoardStatus();
 // Game loop
-                while (!game.isOver()) {
+                while (!game.isGameOver()) {
                     boolean playGame = true;
                     while (playGame) {
                         int position;
@@ -62,25 +60,32 @@ public class Mangala {
                     }
                     game.switchTurn();
                 }
+                //if all the holes of user1 are empty then it collects the remaining stones of user2.
                 if(mangalaGameBoard[users[0].userWalletLocation] > mangalaGameBoard[users[1].userWalletLocation]){
                     for(int i = 0 ; i < 6 ; i++ ){
                         mangalaGameBoard[users[0].userWalletLocation] += mangalaGameBoard[i+7];
                     }
                 }
+                //if all the holes of user2 are empty then it collects the remaining stones of user1.
                 else if(mangalaGameBoard[users[1].userWalletLocation] > mangalaGameBoard[users[0].userWalletLocation]){
                     for(int i = 0 ; i < 6 ; i++ ){
                         mangalaGameBoard[users[1].userWalletLocation] += mangalaGameBoard[i];
                     }
-                }else{
-                    System.out.println("The game is over! No winner :)"); System.exit(0);
                 }
+                //if user1 and user2 have equal stones in their wallets then it is a draw
+                else{
+                    System.out.println("The game is over! No winner :)");
+                    System.exit(0);
+                }
+                //default random winner value
                 int winner = 2;
+                // who has the more stones is the winner
                 if(mangalaGameBoard[users[1].userWalletLocation]<mangalaGameBoard[users[0].userWalletLocation]){
                     winner = 1;
                 }
                 System.out.println("The game is over! The winner is User "+ winner);
-                System.out.println("Scores:\nUser 1: "+mangalaGameBoard[users[0].userWalletLocation]+
-                        " User 2: "+mangalaGameBoard[users[1].userWalletLocation]);
+                System.out.println("Scores:\nUser 1: " + mangalaGameBoard[users[0].userWalletLocation]+
+                        " User 2: " + mangalaGameBoard[users[1].userWalletLocation]);
                 System.exit(0);
             }
         }
@@ -109,7 +114,7 @@ public class Mangala {
         }
     }
 
-        // Resets the game board
+        // Starting the game
         public void startGame() {
             int STARTING_AMOUNT_OF_PIECES = 4;
             Arrays.fill(mangalaGameBoard, STARTING_AMOUNT_OF_PIECES);
@@ -120,7 +125,7 @@ public class Mangala {
         }
 
         // Prints the current game state
-        public void printBoard() {
+        public void printCurrentBoardStatus() {
             System.out.println("             (1) (2) (3) (4) (5) (6) ");
 
             System.out.print("            ");
@@ -143,9 +148,14 @@ public class Mangala {
         }
 
         // Returns true if the game is over (one side has no pieces)
-        public boolean isOver() {
-
-            return sum(users[0]) == 0 || sum(users[1]) == 0;
+        public boolean isGameOver() {
+            boolean isEmpty= false;
+            int user1Sum=sum(users[0]);
+            int user2Sum=sum(users[1]);
+            if(user1Sum ==0 || user2Sum == 0){
+                isEmpty = true;
+            }
+            return isEmpty;
         }
 
         // calculates the number of pieces on player's side of the board
@@ -183,40 +193,42 @@ public class Mangala {
             // if last piece is put in an empty hole of yours then
             // you get other user's opposite hole pieces into your wallet
             if(who.whoseTurn == users[0].whoseTurn && chosenPosition != who.userWalletLocation && chosenPosition < 6 &&
-                    mangalaGameBoard[chosenPosition] == 1 && mangalaGameBoard[12-chosenPosition] != 0){
-                mangalaGameBoard[who.userWalletLocation] += 1 + mangalaGameBoard[12 -chosenPosition];
+                    mangalaGameBoard[chosenPosition] == 1 && mangalaGameBoard[12- chosenPosition] != 0){
+                mangalaGameBoard[who.userWalletLocation] += 1 + mangalaGameBoard[12 - chosenPosition];
                 mangalaGameBoard[chosenPosition] = 0; mangalaGameBoard[12 -chosenPosition] = 0;
+                System.out.println("That's an empty hole. Great job User "+users[0].whoseTurn +", you got your rival's stones");
             }
-            else if (who.whoseTurn == users[1].whoseTurn && chosenPosition != who.userWalletLocation && chosenPosition > 7  &&
-                    mangalaGameBoard[chosenPosition] == 1 && mangalaGameBoard[12-chosenPosition] != 0){
-                mangalaGameBoard[who.userWalletLocation] += 1 + mangalaGameBoard[12 -chosenPosition];
-                mangalaGameBoard[chosenPosition] = 0; mangalaGameBoard[12 -chosenPosition] = 0;
+            else if (who.whoseTurn == users[1].whoseTurn && chosenPosition != who.userWalletLocation && chosenPosition > 6  &&
+                    mangalaGameBoard[chosenPosition] == 1 && mangalaGameBoard[12 - chosenPosition] != 0){
+                mangalaGameBoard[who.userWalletLocation] += 1 + mangalaGameBoard[12 - chosenPosition];
+                mangalaGameBoard[chosenPosition] = 0; mangalaGameBoard[12 - chosenPosition] = 0;
+                System.out.println("That's an empty hole. Great job User "+users[1].whoseTurn +", you got your rival's stones");
             }
 
             // if last piece is put opponent's hole and make it even
             // then you get your rival's stones into your wallet
-           // System.out.println("initChosenPosition: "+initChosenPosition +" chosen position: "+chosenPosition +" mangalaGameBoard[chosenPosition]: "+  mangalaGameBoard[chosenPosition]);
-           // System.out.println("who.whoseTurn: "+who.whoseTurn+" users[0].whoseTurn: "+ users[0].whoseTurn);
             if(who.whoseTurn == users[0].whoseTurn &&(initChosenPosition+initHandAmount)>7
                     && mangalaGameBoard[chosenPosition] % 2 ==0){
                 mangalaGameBoard[who.userWalletLocation] += mangalaGameBoard[chosenPosition];
                 mangalaGameBoard[chosenPosition] = 0;
+                System.out.println("That's an even number. Great job "+users[0].whoseTurn +", you got your rival's stones");
             }
             if(who.whoseTurn == users[1].whoseTurn &&(initChosenPosition+initHandAmount)>14
                     && mangalaGameBoard[chosenPosition] % 2 ==0){
                 mangalaGameBoard[who.userWalletLocation] += mangalaGameBoard[chosenPosition];
                 mangalaGameBoard[chosenPosition] = 0;
+                System.out.println("That's an even number. Great job "+users[1].whoseTurn +", you got your rival's stones");
             }
 
-            printBoard();
-    // if last piece is put in the player's wallet then this player can play one more round
-            if (!isOver() && chosenPosition == who.userWalletLocation) {
-                System.out.println("Play again User " + who.whoseTurn);
+            printCurrentBoardStatus();
+
+            // if last piece is put in the player's wallet then this player can play one more round
+            if (!isGameOver() && chosenPosition == who.userWalletLocation) {
+                System.out.println("The last one is in your wallet. Great!! Play again User " + who.whoseTurn);
                 return true;
             }
             return false;
         }
-
         // Reads a value from a user in the console
         public int readPositionValueFromUser() {
             Scanner userInput = new Scanner(System.in);
@@ -225,21 +237,21 @@ public class Mangala {
              do{
                 try {
                     position = userInput.nextInt();
-        //Error message if input is out of borders
+                    //Error message if input is out of borders
                     if (position < 1 || position > 6) {
                         System.out.println("Input must be between 1 and 6:");
                     } else {
-        // Adapting the hole position if the current player is user1
-        // by subtracting 1 from input value to match the index correctly
+                        // Adapting the hole position if the current player is user1
+                        // by subtracting 1 from input value to match the index correctly
                         if (who == users[0]) {
                             position = position -1;
-        // Adapting the hole position if the current player is user2
-        // by subtracting the input from 13 to match the index correctly
+                          // Adapting the hole position if the current player is user2
+                          // by subtracting the input from 13 to match the index correctly
                         } else {
                             position = 13 - position;
                         }
-        // if entered position has no stones in it then warning message is shown to user
-        // in order to enter input again
+                        // if entered position has no stones in it then warning message is shown to user
+                        // in order to enter input again
                         if (mangalaGameBoard[position] == 0) {
                             System.out.print("position is empty!");
                         } else {
