@@ -1,4 +1,4 @@
-# Mangala-Game
+# Mangala Game
 In this project, you will write a program for the ancient Mangala game.
 
 Mangala is a
