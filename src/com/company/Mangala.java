@@ -1,30 +1,32 @@
 package com.company;
-
 import java.io.IOException;
 import java.util.*;
 
 public class Mangala {
-  // Game board is composed of 14 places. 12 for the holes for the pieces and 2 for the users wallet
+        // Game board is composed of 14 places. 12 for the holes for the pieces and 2 for the users wallet
          public static int[] mangalaGameBoard;
+        // Current player
          public static User who;
-  //There are two users, and we keep them in this array
+        // There are two users, and we keep them in this array
          public static User[] users = new User[2];
-  //At the beginning player presses the enter button and flips a coin to determine who is going to start
+        // At the beginning player presses the enter button and flips a coin to determine who is going to start
          public static int flipUser;
-  //User defining class
+
+         // User defining class
         public static class User {
-    // To determine the wallet location of the user. mangalaGameBoard[6] for the first player and
-    // mangalaGameBoard[13] for the second player
+            // To determine the wallet location of the user. mangalaGameBoard[6] for the first player and
+            // mangalaGameBoard[13] for the second player
             public final int userWalletLocation;
-    // while distributing the pieces to skip the rival's wallet we define this
-            public final int rivalsWalletLocation;
-    // To determine whose turn is this
+            // while distributing the pieces to skip the rival's wallet we define this
+            public final int rivalWalletLocation;
+            // To determine whose turn is this
             public final int whoseTurn;
-    // User class constructor
-            public User(int turn, int walletLocation, int rivalsWalletLocation) {
+
+      // User class constructor
+            public User( int turn, int playerWalletLocation, int rivalWalletLocation) {
+                this.userWalletLocation = playerWalletLocation;
+                this.rivalWalletLocation = rivalWalletLocation;
                 this.whoseTurn = turn;
-                this.userWalletLocation = walletLocation;
-                this.rivalsWalletLocation = rivalsWalletLocation;
             }
 
         }
@@ -50,17 +52,35 @@ public class Mangala {
                 game.printBoard();
 // Game loop
                 while (!game.isOver()) {
-                    boolean again = true;
-                    while (again) {
+                    boolean playGame = true;
+                    while (playGame) {
                         int position;
                         System.out.print("User " + who.whoseTurn + ", enter a  hole number (1-6):");
                         position = game.readPositionValueFromUser();
                         System.out.println("----------------------------------------------------------------");
-                        again = game.markBoard(position);
+                        playGame = game.markBoard(position);
                     }
                     game.switchTurn();
                 }
-                System.out.println("The game is over!");
+                if(mangalaGameBoard[users[0].userWalletLocation] > mangalaGameBoard[users[1].userWalletLocation]){
+                    for(int i = 0 ; i < 6 ; i++ ){
+                        mangalaGameBoard[users[0].userWalletLocation] += mangalaGameBoard[i+7];
+                    }
+                }
+                else if(mangalaGameBoard[users[1].userWalletLocation] > mangalaGameBoard[users[0].userWalletLocation]){
+                    for(int i = 0 ; i < 6 ; i++ ){
+                        mangalaGameBoard[users[1].userWalletLocation] += mangalaGameBoard[i];
+                    }
+                }else{
+                    System.out.println("The game is over! No winner :)"); System.exit(0);
+                }
+                int winner = 2;
+                if(mangalaGameBoard[users[1].userWalletLocation]<mangalaGameBoard[users[0].userWalletLocation]){
+                    winner = 1;
+                }
+                System.out.println("The game is over! The winner is User "+ winner);
+                System.out.println("Scores:\nUser 1: "+mangalaGameBoard[users[0].userWalletLocation]+
+                        " User 2: "+mangalaGameBoard[users[1].userWalletLocation]);
                 System.exit(0);
             }
         }
@@ -79,7 +99,7 @@ public class Mangala {
                 who = users[0];
             }
         }
-    public int flipCoin() {
+        public int flipCoin() {
         Random randomNum = new Random();
         int result = randomNum.nextInt(2);
         if (result == 0) {
@@ -104,16 +124,17 @@ public class Mangala {
             System.out.println("             (1) (2) (3) (4) (5) (6) ");
 
             System.out.print("            ");
-            for (int i = mangalaGameBoard.length - 2; i >= mangalaGameBoard.length / 2; i--) {
+            for (int i = 12; i >= 7; i--) {
                 System.out.print("| ");
                 System.out.printf("%-2s", mangalaGameBoard[i]);
             }
-            System.out.print("|  \nUser 2> |");
-            System.out.printf("%-3d|<--------------------->|%3d| <User 1\n",
+            System.out.print("|\n             <<<<<<<<<<<<<<<<<<<<<<<");
+            System.out.print("   \nUser 2> |");
+            System.out.printf("%-3d|-----------------------|%3d| <User 1",
                     mangalaGameBoard[users[1].userWalletLocation], mangalaGameBoard[users[0].userWalletLocation]);
-
+            System.out.println("\n             >>>>>>>>>>>>>>>>>>>>>>>");
             System.out.print("            ");
-            for (int i = 0; i < (mangalaGameBoard.length / 2) - 1; i++) {
+            for (int i = 0; i < 6; i++) {
                 System.out.print("| ");
                 System.out.printf("%-2s", mangalaGameBoard[i]);
             }
@@ -127,49 +148,64 @@ public class Mangala {
             return sum(users[0]) == 0 || sum(users[1]) == 0;
         }
 
-        // Returns an Integer of the number of pieces on User player's side of the board
+        // calculates the number of pieces on player's side of the board
         public int sum(User player) {
             int sum = 0;
-            int start = (player.rivalsWalletLocation + 1) % 14;
+            int start = (player.rivalWalletLocation + 1) % 14;
             for (int i = start; i < start + 13 / 2; i++) {
                 sum += mangalaGameBoard[i];
             }
             return sum;
         }
 
-
         public boolean markBoard(int chosenPosition) {
             int pieceAmount = mangalaGameBoard[chosenPosition];
+            int initChosenPosition = chosenPosition;
+            int initHandAmount = pieceAmount;
       // if there is more than 1 piece it distributes normally
             if (pieceAmount>1){
                 mangalaGameBoard[chosenPosition] = 1;
                 pieceAmount = pieceAmount - 1;
             }
        // if there is only 1 piece it moves the piece in to the next hole
-
             else mangalaGameBoard[chosenPosition] = 0;
 
             while (pieceAmount > 0) {
+               // System.out.println("chosen position track :"+chosenPosition);
                 chosenPosition = (chosenPosition + 1) % 14;
                 pieceAmount = pieceAmount - 1;
-               if (chosenPosition == who.rivalsWalletLocation) {
+                if (chosenPosition == who.rivalWalletLocation) {
                    chosenPosition = (chosenPosition + 1) % 14;
-              }
+                }
                 mangalaGameBoard[chosenPosition] = mangalaGameBoard[chosenPosition] + 1;
             }
 
-    // if last piece is put opponent's hole and make it even
-    // then you get your rival's pieces in to your wallet doesn't work for player 2
-            if( mangalaGameBoard[chosenPosition] % 2 ==0){
-               mangalaGameBoard[who.userWalletLocation] += mangalaGameBoard[chosenPosition];
-               mangalaGameBoard[chosenPosition] = 0;
-            }
-    // if last piece is put in an empty hole of yours then
-    // you get other user's opposite hole pieces in to your wallet
-            if (chosenPosition != who.userWalletLocation && mangalaGameBoard[chosenPosition] == 1 && mangalaGameBoard[mangalaGameBoard.length - 2 -chosenPosition] != 0) {
-                mangalaGameBoard[who.userWalletLocation] += mangalaGameBoard[chosenPosition] + mangalaGameBoard[mangalaGameBoard.length - 2 -chosenPosition];
+            // if last piece is put in an empty hole of yours then
+            // you get other user's opposite hole pieces into your wallet
+            if(who.whoseTurn == users[0].whoseTurn && chosenPosition != who.userWalletLocation && chosenPosition < 6 &&
+                    mangalaGameBoard[chosenPosition] == 1 && mangalaGameBoard[12-chosenPosition] != 0){
+                mangalaGameBoard[who.userWalletLocation] += 1 + mangalaGameBoard[12 -chosenPosition];
                 mangalaGameBoard[chosenPosition] = 0; mangalaGameBoard[12 -chosenPosition] = 0;
+            }
+            else if (who.whoseTurn == users[1].whoseTurn && chosenPosition != who.userWalletLocation && chosenPosition > 7  &&
+                    mangalaGameBoard[chosenPosition] == 1 && mangalaGameBoard[12-chosenPosition] != 0){
+                mangalaGameBoard[who.userWalletLocation] += 1 + mangalaGameBoard[12 -chosenPosition];
+                mangalaGameBoard[chosenPosition] = 0; mangalaGameBoard[12 -chosenPosition] = 0;
+            }
 
+            // if last piece is put opponent's hole and make it even
+            // then you get your rival's stones into your wallet
+           // System.out.println("initChosenPosition: "+initChosenPosition +" chosen position: "+chosenPosition +" mangalaGameBoard[chosenPosition]: "+  mangalaGameBoard[chosenPosition]);
+           // System.out.println("who.whoseTurn: "+who.whoseTurn+" users[0].whoseTurn: "+ users[0].whoseTurn);
+            if(who.whoseTurn == users[0].whoseTurn &&(initChosenPosition+initHandAmount)>7
+                    && mangalaGameBoard[chosenPosition] % 2 ==0){
+                mangalaGameBoard[who.userWalletLocation] += mangalaGameBoard[chosenPosition];
+                mangalaGameBoard[chosenPosition] = 0;
+            }
+            if(who.whoseTurn == users[1].whoseTurn &&(initChosenPosition+initHandAmount)>14
+                    && mangalaGameBoard[chosenPosition] % 2 ==0){
+                mangalaGameBoard[who.userWalletLocation] += mangalaGameBoard[chosenPosition];
+                mangalaGameBoard[chosenPosition] = 0;
             }
 
             printBoard();
@@ -189,14 +225,21 @@ public class Mangala {
              do{
                 try {
                     position = userInput.nextInt();
+        //Error message if input is out of borders
                     if (position < 1 || position > 6) {
                         System.out.println("Input must be between 1 and 6:");
                     } else {
+        // Adapting the hole position if the current player is user1
+        // by subtracting 1 from input value to match the index correctly
                         if (who == users[0]) {
                             position = position -1;
+        // Adapting the hole position if the current player is user2
+        // by subtracting the input from 13 to match the index correctly
                         } else {
                             position = 13 - position;
                         }
+        // if entered position has no stones in it then warning message is shown to user
+        // in order to enter input again
                         if (mangalaGameBoard[position] == 0) {
                             System.out.print("position is empty!");
                         } else {
