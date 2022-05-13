@@ -218,9 +218,7 @@ public class Mangala {
                 mangalaGameBoard[chosenPosition] = 0;
                 System.out.println("That's an even number. Great job "+users[1].whoseTurn +", you got your rival's stones");
             }
-
             printCurrentBoardStatus();
-
             // if last piece is put in the player's wallet then this player can play one more round
             if (!isGameOver() && chosenPosition == who.userWalletLocation) {
                 System.out.println("The last one is in your wallet. Great!! Play again User " + who.whoseTurn);
