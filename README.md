@@ -12,3 +12,9 @@ https://www.mangala.com.tr/mangala-nasil-oynanir
 • You don’t need to implement a GUI. However, you need to display the current
 game status after each move. You can use console for getting input and printing
 the board status.
+
+Your program will end execution when one of the players has no stones in her holes.
+This player will put the stones in the holes of the opponent to her box.
+
+The winner will
+be the one who has more number of stones in her own box at the end of the game.
